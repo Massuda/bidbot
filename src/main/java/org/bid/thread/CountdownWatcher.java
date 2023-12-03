@@ -60,12 +60,17 @@ public class CountdownWatcher extends AbstractBrowser implements Runnable {
                     bb.appendTextToTextArea(bb.thread1TextArea, "Bid #: "+counter);
                     bb.appendTextToTextArea(bb.thread1TextArea, "Bid avoided #:"+bidAvoidedCounter);
 
-                    page.waitForSelector(selector); // Aspetta che l'elemento sia presente
+                    //page.waitForSelector(selector); // Aspetta che l'elemento sia presente
+                    ElementHandle element = page.querySelector(selector);
+                    if (element == null) {
+                        System.out.println("[class=\"text-countdown-progressbar\"] not present in page.");
+                        page.reload();
+                    }
                     page.waitForFunction("() => document.querySelector('.text-countdown-progressbar').textContent === '0'");
                     Random rand = new Random();
                     int int_random = rand.nextInt(100) + 400;
                     Thread.sleep(int_random);
-                    Locator value1 = page.locator("[class=\"text-countdown-progressbar\"]");//class="text-countdown-progressbar"
+                    Locator value1 = page.locator(selector);//class="text-countdown-progressbar"
                     String countdown = value1.textContent();
                     if(countdown.equals("0")){
                         String currentWinnerSelector = "p.auction-current-winner";
@@ -76,11 +81,11 @@ public class CountdownWatcher extends AbstractBrowser implements Runnable {
                             robot.mouseRelease(InputEvent.BUTTON1_DOWN_MASK);
                             counter++;
                             bb.soundAlert("/bid-alert-sound.wav");
+                            Thread.sleep(1000);//if it has bid he must wait for the timer to reset
                         }
                     } else {
                         bidAvoidedCounter++;
                     }
-                    Thread.sleep(1000);//if it has bid he must wait for the timer to reset
                 } catch (PlaywrightException e) {
                     String iniziaSelector = "a.bid-button.button-default.button-rounded.button-full.ripple-button.button-big-text.auction-btn-bid.button-empty-flat.button-soon-empty-flat.bid-button-empty-soon.hidden-xs";
                     ElementHandle iniziaElement = page.querySelector(iniziaSelector);
