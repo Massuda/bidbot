@@ -20,7 +20,7 @@ public class BidBot extends JFrame {
     public JButton startThread1Button, stopThread1Button, startThread2Button, stopThread2Button;
 
     public Thread thread1, thread2;
-    public boolean isSelectedManualAlertSound=false;
+    public boolean isSelectedManualAlertSound=false, isSelectedBidAlertSound=false, isSelectedCookieExpiredAlertSound=false;
     public boolean isThread1Running = false, isThread2Running = false;
     public BidBot() {
         // Imposta il titolo della finestra
@@ -36,7 +36,7 @@ public class BidBot extends JFrame {
 
         // Crea e aggiungi le due tab alla finestra
         JTabbedPane tabbedPane = new JTabbedPane();
-        tabbedPane.addTab("Impostazioni", settingsPanel);
+        tabbedPane.addTab("Settings", settingsPanel);
 
         tabbedPane.addTab("Thread", threadPanel);
 
@@ -208,7 +208,19 @@ public class BidBot extends JFrame {
             isSelectedManualAlertSound = manualAlertSoundButton.isSelected();
         });
 
+        JCheckBox  bidAlertSoundButton = new JCheckBox ("Bid Alert Sound");
+        bidAlertSoundButton.addActionListener(e -> {
+            isSelectedBidAlertSound = bidAlertSoundButton.isSelected();
+        });
+
+        JCheckBox  cookieExpiredAlertSoundButton = new JCheckBox ("Cookie Expired Alert Sound");
+        cookieExpiredAlertSoundButton.addActionListener(e -> {
+            isSelectedCookieExpiredAlertSound = cookieExpiredAlertSoundButton.isSelected();
+        });
+
         settingsPanel.add(manualAlertSoundButton);
+        settingsPanel.add(bidAlertSoundButton);
+        settingsPanel.add(cookieExpiredAlertSoundButton);
 
         settingsPanel.add(saveButton);
     }
@@ -219,9 +231,9 @@ public class BidBot extends JFrame {
         String filePath = currentDirectory + File.separator + fileName;
         File file = new File(filePath);
         if (file.delete()) {
-            appendTextToTextArea(thread1TextArea, "state.json è stato eliminato con successo.");
+            appendTextToTextArea(thread1TextArea, "state.json deleted.");
         } else {
-            JOptionPane.showMessageDialog(this, "Impossibile eliminare il file.", "Errore nell'eliminare state.json", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Error deleting state.json.", "Error deleting state.json", JOptionPane.ERROR_MESSAGE);
         }
     }
 
@@ -233,7 +245,7 @@ public class BidBot extends JFrame {
         String fileName = "config.properties";
         String filePath = currentDirectory + File.separator + fileName;
         try (FileOutputStream fos = new FileOutputStream(filePath)) {
-            properties.store(fos, "Impostazioni");
+            properties.store(fos, "Settings");
             JOptionPane.showMessageDialog(this, "Setting saved.", "Saved complete", JOptionPane.INFORMATION_MESSAGE);
         } catch (IOException e) {
             JOptionPane.showMessageDialog(this, "Error during setting saving.", "Saving error", JOptionPane.ERROR_MESSAGE);

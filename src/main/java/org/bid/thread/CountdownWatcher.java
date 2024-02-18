@@ -5,6 +5,7 @@ import com.microsoft.playwright.options.Cookie;
 import org.bid.PropertiesLoader;
 import org.bid.gui.BidBot;
 
+import javax.swing.*;
 import java.awt.*;
 import java.io.File;
 import java.nio.file.Files;
@@ -54,21 +55,24 @@ public class CountdownWatcher extends AbstractBrowser implements Runnable {
                     bb.thread1TextArea.setText("");
                     Cookie minExpireCookie = getMinExpireCookie(context);
                     String name = minExpireCookie.name;
-                    double expiresTimestamp = minExpireCookie.expires;
-                    bb.appendTextToTextArea(bb.thread1TextArea, new Timestamp(System.currentTimeMillis())+"");
-                    bb.appendTextToTextArea(bb.thread1TextArea, "Expiring cookie --> Name:"+name+", expiresTimestamp: "+new Timestamp((long)expiresTimestamp*1000));
+                    double expiresTimestampMillis = minExpireCookie.expires;
+                    Timestamp expiresTimestamp = new Timestamp((long)expiresTimestampMillis*1000);
+                    Timestamp currentTimestamp = new Timestamp(System.currentTimeMillis());
+                    bb.appendTextToTextArea(bb.thread1TextArea, currentTimestamp+"");
+                    bb.appendTextToTextArea(bb.thread1TextArea, "Expiring cookie --> Name:"+name+", expiresTimestamp: "+expiresTimestamp);
                     bb.appendTextToTextArea(bb.thread1TextArea, "Bid #: "+counter);
                     bb.appendTextToTextArea(bb.thread1TextArea, "Bid avoided #:"+bidAvoidedCounter);
-
-                    //page.waitForSelector(selector); // Aspetta che l'elemento sia presente
-                    ElementHandle element = page.querySelector(selector);
-                    if (element == null) {
-                        System.out.println("[class=\"text-countdown-progressbar\"] not present in page.");
-                        page.reload();
+                    if(expiresTimestamp.before(currentTimestamp)){
+                        if(bb.isSelectedCookieExpiredAlertSound){
+                            bb.soundAlert("/beep-cookie-expire.wav");
+                        }
+                        JOptionPane.showMessageDialog(bb, "Cookie expired. Do some actions on page.", "Cookie expired.", JOptionPane.INFORMATION_MESSAGE);
                     }
+                    //page.waitForSelector(selector); // Aspetta che l'elemento sia presente
+
                     page.waitForFunction("() => document.querySelector('.text-countdown-progressbar').textContent === '0'");
                     Random rand = new Random();
-                    int int_random = rand.nextInt(100) + 400;
+                    int int_random = rand.nextInt(50) + 50;
                     Thread.sleep(int_random);
                     Locator value1 = page.locator(selector);//class="text-countdown-progressbar"
                     String countdown = value1.textContent();
@@ -80,7 +84,9 @@ public class CountdownWatcher extends AbstractBrowser implements Runnable {
                             robot.mousePress(InputEvent.BUTTON1_DOWN_MASK);
                             robot.mouseRelease(InputEvent.BUTTON1_DOWN_MASK);
                             counter++;
-                            bb.soundAlert("/bid-alert-sound.wav");
+                            if(bb.isSelectedBidAlertSound){
+                                bb.soundAlert("/bid-alert-sound.wav");
+                            }
                             Thread.sleep(1000);//if it has bid he must wait for the timer to reset
                         }
                     } else {
